@@ -1,42 +1,47 @@
-trigger:
-  branches:
-    include:
-      - main
+name: "CodeQL Scan - Cloud_team_18_Stark"
 
-pool:
-  name: CloudAgentPool  # your custom self-hosted agent
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1' # every Monday at 3AM UTC
 
-variables:
-  NODE_VERSION: '18.x'
+jobs:
+  analyze:
+    name: CodeQL Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
 
-stages:
-  - stage: BuildAndTest
-    displayName: "Build and Test"
-    jobs:
-      - job: Build
-        displayName: "Install and Build"
-        steps:
-          # Checkout the code
-          - checkout: self
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
 
-          # Use Node.js 18.x
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '$(NODE_VERSION)'
-            displayName: "Use Node.js $(NODE_VERSION)"
+    steps:
+      # 🧩 Step 1: Checkout your repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          # Install dependencies
-          - script: npm ci
-            displayName: "Install Dependencies"
+      # 🧩 Step 2: Setup Node.js (match your local Node version)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-          # Build project
-          - script: npm run build
-            displayName: "Build Project"
+      # 🧩 Step 3: Install dependencies
+      # use 'npm install' (safer than 'npm ci' if lock file mismatch)
+      - name: Install dependencies
+        run: npm install
 
-          # Dummy test (safe for your setup)
-          - script: npm test || echo 'No tests defined'
-            displayName: "Run Tests"
+      # 🧩 Step 4: Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
 
-          # Simulated deployment
-          - script: echo "✅ Deployment successful (simulated)"
-            displayName: "Deploy App"
+      # 🧩 Step 5: Build your Vi
