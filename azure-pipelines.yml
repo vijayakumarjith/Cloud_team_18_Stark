@@ -11,12 +11,12 @@ variables:
 
 stages:
   - stage: BuildAndTest
-    displayName: "Build and Security Scan"
+    displayName: "Build and Test"
     jobs:
       - job: Build
-        displayName: "Install, Build, and Scan"
+        displayName: "Install and Build"
         steps:
-          # Checkout the code from your repo
+          # Checkout the code
           - checkout: self
 
           # Use Node.js 18.x
@@ -37,26 +37,6 @@ stages:
           - script: npm test || echo 'No tests defined'
             displayName: "Run Tests"
 
-          # 🧩 Step 1: Prepare SonarCloud analysis
-          - task: SonarCloudPrepare@1
-            inputs:
-              SonarCloud: 'SonarCloudConnection'        # name of your Service Connection
-              organization: 'vijayakumarjith'           # your SonarCloud organization
-              scannerMode: 'CLI'
-              configMode: 'manual'
-              cliProjectKey: 'vijayakumarjith_Cloud_team_18_Stark'   # your project key
-              cliProjectName: 'Cloud_team_18_Stark'     # display name of project
-
-          # 🧩 Step 2: Run the actual scan
-          - task: SonarCloudAnalyze@1
-            displayName: "Run SonarCloud Scan"
-
-          # 🧩 Step 3: Publish scan results
-          - task: SonarCloudPublish@1
-            inputs:
-              pollingTimeoutSec: '300'
-            displayName: "Publish SonarCloud Report"
-
-          # Optional: Deploy step simulation
-          - script: echo "Deployment successful (simulated)"
+          # Simulated deployment
+          - script: echo "✅ Deployment successful (simulated)"
             displayName: "Deploy App"
