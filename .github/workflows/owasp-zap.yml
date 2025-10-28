@@ -1,0 +1,16 @@
+name: OWASP ZAP Baseline Scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'  # every Monday
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'https://cloudteam18stark.azurewebsites.net'
+          cmd_options: '-a'
