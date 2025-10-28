@@ -6,11 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 3 * * 1'  # weekly scan (Monday 3 AM)
+    - cron: '0 3 * * 1'  # runs weekly on Monday
 
 jobs:
   analyze:
-    name: CodeQL Analysis
+    name: Analyze
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -20,21 +20,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python', 'javascript' ]  # adjust based on your app
+        language: [ 'javascript', 'typescript' ]
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
 
-      - name: Build / Setup
-        run: |
-          echo "Simulating build steps..."
-          echo "Your project files are ready for scanning."
+      - name: Build the project
+        run: npm run build || echo "No build step defined"
 
-      - name: Analyze with CodeQL
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
