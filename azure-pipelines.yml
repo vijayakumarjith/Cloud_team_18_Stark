@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: CloudAgentPool   # ✅ use your self-hosted agent pool
 
 variables:
   NODE_VERSION: '18.x'
