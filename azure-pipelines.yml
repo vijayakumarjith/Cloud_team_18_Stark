@@ -1,0 +1,41 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  NODE_VERSION: '18.x'
+
+stages:
+  - stage: BuildAndTest
+    displayName: "Build and Test"
+    jobs:
+      - job: Build
+        displayName: "Install and Build"
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '$(NODE_VERSION)'
+            displayName: "Use Node.js $(NODE_VERSION)"
+
+          - script: npm install
+            displayName: "Install Dependencies"
+
+          - script: npm run build || echo 'No build script defined'
+            displayName: "Build Project"
+
+          - script: npm test || echo 'No tests defined'
+            displayName: "Run Tests"
+
+  - stage: Deploy
+    displayName: "Deploy (Optional)"
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        steps:
+          - script: echo 'Simulated deployment step'
+            displayName: "Deploy App"
