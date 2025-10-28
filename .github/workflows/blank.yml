@@ -1,0 +1,40 @@
+name: "CodeQL Scan - Cloud_team_18_Stark"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1'  # weekly scan (Monday 3 AM)
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python', 'javascript' ]  # adjust based on your app
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Build / Setup
+        run: |
+          echo "Simulating build steps..."
+          echo "Your project files are ready for scanning."
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@v3
