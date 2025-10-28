@@ -4,38 +4,59 @@ trigger:
       - main
 
 pool:
-  name: CloudAgentPool   # ✅ use your self-hosted agent pool
+  name: CloudAgentPool  # your custom self-hosted agent
 
 variables:
   NODE_VERSION: '18.x'
 
 stages:
   - stage: BuildAndTest
-    displayName: "Build and Test"
+    displayName: "Build and Security Scan"
     jobs:
       - job: Build
-        displayName: "Install and Build"
+        displayName: "Install, Build, and Scan"
         steps:
+          # Checkout the code from your repo
+          - checkout: self
+
+          # Use Node.js 18.x
           - task: NodeTool@0
             inputs:
               versionSpec: '$(NODE_VERSION)'
             displayName: "Use Node.js $(NODE_VERSION)"
 
-          - script: npm install
+          # Install dependencies
+          - script: npm ci
             displayName: "Install Dependencies"
 
-          - script: npm run build || echo 'No build script defined'
+          # Build project
+          - script: npm run build
             displayName: "Build Project"
 
+          # Dummy test (safe for your setup)
           - script: npm test || echo 'No tests defined'
             displayName: "Run Tests"
 
-  - stage: Deploy
-    displayName: "Deploy (Optional)"
-    dependsOn: BuildAndTest
-    condition: succeeded()
-    jobs:
-      - job: Deploy
-        steps:
-          - script: echo 'Simulated deployment step'
+          # 🧩 Step 1: Prepare SonarCloud analysis
+          - task: SonarCloudPrepare@1
+            inputs:
+              SonarCloud: 'SonarCloudConnection'        # name of your Service Connection
+              organization: 'vijayakumarjith'           # your SonarCloud organization
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliProjectKey: 'vijayakumarjith_Cloud_team_18_Stark'   # your project key
+              cliProjectName: 'Cloud_team_18_Stark'     # display name of project
+
+          # 🧩 Step 2: Run the actual scan
+          - task: SonarCloudAnalyze@1
+            displayName: "Run SonarCloud Scan"
+
+          # 🧩 Step 3: Publish scan results
+          - task: SonarCloudPublish@1
+            inputs:
+              pollingTimeoutSec: '300'
+            displayName: "Publish SonarCloud Report"
+
+          # Optional: Deploy step simulation
+          - script: echo "Deployment successful (simulated)"
             displayName: "Deploy App"
