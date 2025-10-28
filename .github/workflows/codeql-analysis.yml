@@ -1,27 +1,52 @@
-name: OWASP ZAP Baseline Scan
+name: "CodeQL Scan - Cloud_team_18_Stark"
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   schedule:
-    - cron: '0 2 * * 1'   # every Monday at 2AM UTC
+    - cron: '0 3 * * 1' # every Monday at 3AM UTC
 
 jobs:
-  zap_scan:
+  analyze:
+    name: CodeQL Analyze
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'typescript' ]
 
     steps:
-      - name: Run OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.10.0
-        with:
-          target: 'https://cloudteam18stark.azurewebsites.net'  # 🔁 change this to your deployed site
-          cmd_options: '-a'
-          rules_file_name: '.zap/rules.tsv'  # optional, helps control alerts
-          allow_issue_writing: false
-          fail_action: false
-          report_name: 'zap_report.html'     # ✅ ensures file is generated
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
+      # Step 2: Setup Node.js (use the same version as your project)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: zap-report
-          path: zap_report.html
+          node-version: 22
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      # Step 5: Build project
+      - name: Build project
+        run: npm run build || echo "⚠️ No build step defined"
+
+      # Step 6: Run CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
