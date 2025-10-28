@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 3 * * 1'  # every Monday 3 AM UTC
+    - cron: '0 3 * * 1' # every Monday at 3AM UTC
 
 jobs:
   analyze:
@@ -29,10 +29,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22   # matches your environment
+          node-version: 22
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -40,7 +40,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Build project
-        run: npm run build || echo "No build step defined"
+        run: npm run build || echo "⚠️ No build step defined"
 
-      - name: Analyze with CodeQL
+      - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
