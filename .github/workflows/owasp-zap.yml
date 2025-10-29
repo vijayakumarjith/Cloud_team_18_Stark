@@ -3,32 +3,35 @@ name: "OWASP ZAP Baseline Scan"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 6 * * 1'  # every Monday at 6 AM UTC
+    - cron: '0 6 * * 1'  # every Monday 6 AM UTC
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout your repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run OWASP ZAP Baseline Scan
+      # Step 2: Run OWASP ZAP baseline scan
+      - name: Run ZAP Baseline Scan
         id: zap
         uses: zaproxy/action-baseline@v0.10.0
         with:
-          target: 'https://cloudteam18stark.azurewebsites.net'   # 🔹 Replace with your deployed app URL
+          target: 'https://cloudteam18stark.azurewebsites.net'   # ✅ Replace with your real URL
           rules_file_name: '.zap/rules.tsv'
-          cmd_options: '-a -J zap_report.json -w zap_report.html'
+          cmd_options: '-a -J zap_output.json -w zap_output.html'
           allow_issue_writing: false
-          artifact_name: 'zap_report'
+          artifact_name: 'zap_report'   # ✅ underscores are valid
           issue_title: 'OWASP ZAP Baseline Scan Results'
 
+      # Step 3: Upload the scan results as artifact
       - name: Upload ZAP Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: zap_report       # ✅ use underscore, not hyphen
+          name: zap_report    # ✅ same valid name
           path: |
-            zap_report.html
-            zap_report.json
+            zap_output.html
+            zap_output.json
