@@ -1,27 +1,33 @@
-name: OWASP ZAP Baseline Scan
+name: "OWASP ZAP Baseline Scan"
 
 on:
-  workflow_dispatch:        # Run manually anytime
+  workflow_dispatch:  # Allows manual trigger from Actions tab
   schedule:
-    - cron: '0 2 * * 1'     # Runs every Monday at 2 AM UTC
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1 – Run OWASP ZAP Baseline Scan
-      - name: Run OWASP ZAP Baseline Scan
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Run OWASP ZAP baseline scan
+      - name: Run ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
-          target: 'https://cloudteam18stark.azurewebsites.net'   # 🔁 replace with your actual URL
-          cmd_options: '-a'                                      # Active scan for deeper analysis
-          report_name: 'zap_report.html'                         # ✅ Save report with fixed name
-          fail_action: false                                     # Do not mark build failed on alerts
+          target: 'https://example.com'   # ⚠️ Replace with your deployed web app URL
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'               # Automatically explore and attack lightly
+          allow_issue_writing: false
+          artifact_name: 'zap-report'
+          issue_title: 'OWASP ZAP Baseline Scan Results'
 
-      # Step 2 – Upload the report as artifact
+      # Step 3: Upload report as an artifact
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: zap_report.html
+          path: zap-report/
